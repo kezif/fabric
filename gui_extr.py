@@ -20,7 +20,7 @@ class DataExtract(HasTraits):
     file_name = File(value='', filter=['*.stl'])
     open = Button('Open...')
     height = Range(0, 50, 25, label='top H')
-    top_h = Int(3, label='Dick height ')
+    top_h = Int(3, label='Disk height ')
     rot = Range(-3.14, 3.14, 0.0, label='Rotate by, rad')
     figure = Instance(Figure, ())
     save = Button('Build models and save')
