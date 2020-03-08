@@ -31,7 +31,8 @@ def cart2pol_(x, y, x0=0, y0=0):
 def merge_slices_into_pd(slices, h):
     h = ['{:.1f}'.format(_) for _ in h]  # round float values
     pd_slices = [pd.DataFrame(slice, columns=[h_, 'theta'])  # convert arrays to pandas frame array
-                     .apply(lambda x: np.around(x * 100 / 5) * 5 / 100 if x.name == 'theta' else x)  # round theta to nearest 5 w 2 point of precision
+                     .apply(lambda x: np.around(
+        x * 100 / 5) * 5 / 100 if x.name == 'theta' else x)  # round theta to nearest 5 w 2 point of precision
                      .groupby(['theta']).mean()  # remove (group by mean) values w repeated theta
                  for slice, h_ in zip(slices, h)]
     result = pd.concat([df.stack() for df in pd_slices], axis=0).unstack()  # concat array to big frame
@@ -93,26 +94,33 @@ def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a,
     worksheet_data = workbook.add_worksheet('Data')
     writer.sheets['Result'] = worksheet_result
     writer.sheets['Data'] = worksheet_data
+    bold_cell = workbook.add_format({'bold': True, 'border': 1})
+    subscript = workbook.add_format({'font_script': 2})
 
-    worksheet_result.write_string(0, 0, 'Fitting results')
-    models.to_excel(writer, sheet_name='Result', startrow=0, startcol=0)
+    df = models.loc[:, ['n', 'r0', 'r1', 'dfi1', 'k1', 'r2', 'dfi2', 'ar2']]  # reshape in cool format
+    # df.columns = ['r₀', 'r₁', 'r₂', 'n', 'Δφ₁', 'Δφ₂', 'k₁', 'k₂', 'R²']
+    df.columns = ['n', 'R₀', 'ΔR₁', 'Δφ₁', 'k₁', 'ΔR₂', 'Δφ₂', 'R²']  # set pretty text formatting
+    df.to_excel(writer, sheet_name='Result', startrow=0, startcol=0)
     worksheet_result.write_string(models.shape[0] + 4, 0, 'Lines')
-    line.to_excel(writer, sheet_name='Result', startrow=models.shape[0] + 4, startcol=0)
-    worksheet_result.write_string(0, 0, 'Data')
-    worksheet_result.write(models.shape[0] + 1, models.shape[1], big_ar2)
+    line.to_excel(writer, sheet_name='Result', startrow=df.shape[0] + 4, startcol=0)
+    worksheet_result.write_string(0, 0, 'H', bold_cell)
+    worksheet_result.write(df.shape[0] + 1, df.shape[1], big_ar2)
+    worksheet_result.write_string(df.shape[0] + 1, df.shape[1] - 1, 'With h:')
+
     data.to_excel(writer, sheet_name='Data', startrow=0, startcol=0)
     worksheet_data.insert_image(2, data.shape[1] + 2, 'temp\\slices.png')
     worksheet_data.insert_image(20, data.shape[1] + 2, 'temp\\circle_fit.png', {'x_scale': 0.5, 'y_scale': 0.5})
     for pat, i, j in zip(model_pics_paths, [0, 0, 1, 1], [0, 1, 0, 1]):
         worksheet_result.insert_image(models.shape[0] + line.shape[0] + 6 + 19 * i, 5 + 6 * j, pat)
-    if shadow_a is not None:
-        bold_f = workbook.add_format({'bold': True, 'border': 1})
+    if shadow_a is not None:  # ridiculous if statement :/Dₒₔ
         cols = [5, 6, 8, 9, 10, 11, 12]
-        words = ['R', 'r', 'S', 'D', 'T', 'O', 'd']
-        [worksheet_result.write_string(8, col, word, bold_f) for col, word in zip(cols, words)]
+        words = ['r', 'r', 'A', 'A', 'm', 'm', 'D']
+        subs = ['пробы', 'диска', 's', 'o', 'sa', 'pr', 'd']
+        [worksheet_result.write_rich_string(8, col, word, subscript, sub, bold_cell) for col, word, sub in zip(cols, words, subs)]
         cols = [8, 9, 10, 11]  # same as prev :(
-        words = ['D.1.1', 'D.1.5', 'D.1.6', 'D.1.17']
-        [worksheet_result.write_string(11, col, word, bold_f) for col, word in zip(cols, words)]
+        words = ['Ф.I', 'Ф.II', 'Ф.III', 'Ф.IV']
+        [worksheet_result.write_string(11, col, word, bold_cell) for col, word in zip(cols, words)]
+        worksheet_result.write_rich_string(12, 7, 'К', subscript, 'Д', ',%')
 
         worksheet_result.write_number(9, 8, shadow_a)  # I10 S
         worksheet_result.write_formula(9, 9, '=PI() * F10 * F10')  # J10 D
