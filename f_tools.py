@@ -31,7 +31,7 @@ def cart2pol_(x, y, x0=0, y0=0):
 def merge_slices_into_pd(slices, h):
     h = ['{:.1f}'.format(_) for _ in h]  # round float values
     pd_slices = [pd.DataFrame(slice, columns=[h_, 'theta'])  # convert arrays to pandas frame array
-                     .apply(lambda x: np.around(
+                     .apply(lambda x: np.ceil(
         x * 100 / 5) * 5 / 100 if x.name == 'theta' else x)  # round theta to nearest 5 w 2 point of precision
                      .groupby(['theta']).mean()  # remove (group by mean) values w repeated theta
                  for slice, h_ in zip(slices, h)]

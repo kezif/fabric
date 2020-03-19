@@ -37,7 +37,7 @@ def slice_dots(dots, n: int, max_h: int, ignore_before_h: int = 15, top_h: int =
         layer = layer_from_dots(dots, layer_h)
         layer_polar = cart2pol_(layer) + [0, rot]
         slices.append(layer_polar)  # save slice
-        h.append(layer_h)  # - top_h)  # and corresponding h
+        h.append(layer_h - top_h)  # and corresponding h
     slices = np.array(slices)
     return slices, h
 
