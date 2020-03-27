@@ -38,21 +38,14 @@ def slice_dots(dots, n: int, max_h: int, ignore_before_h: int = 15, top_h: int =
         layer_polar = cart2pol_(layer) + [0, rot]
         slices.append(layer_polar)  # save slice
         h.append(layer_h - top_h)  # and corresponding h
+    slices.append(shadow_layer(dots)[:, :2])  # and also append shadow layer
+    h.append('shadow')
     slices = np.array(slices)
     return slices, h
 
 
 def shadow_area(dots):
-    raw_dots = dots
-    z = raw_dots[:, 2]
-
-    dots = cart2pol_(raw_dots)
-    dots = np.swapaxes(np.array([dots[:, 0], dots[:, 1], z]), 0, 1)
-
-    dots[:, 1] = np.around(dots[:, 1] * 180 / pi)  # convert to degrees and round result
-    by_angle = [dots[dots[:, 1] == angle] for angle in np.unique(dots[:, 1])]  # separate r values by angle
-    by_angle = np.array([arr[np.argmax(arr[:, 0])] for arr in by_angle])  # keep only highest r value
-    by_angle[:, 1] = by_angle[:, 1] / 180 * pi  # convert back to radians
+    by_angle = shadow_layer(dots)
 
     rs = by_angle[:, 0]  # keep only r values
     d_alpha = 2 * pi / len(rs)  # shadow area calculation
@@ -64,6 +57,18 @@ def shadow_area(dots):
     s = np.sqrt(p * (p - r1) * (p - r2) * (p - a))
     a_s = np.sum(s)
     return a_s
+
+
+def shadow_layer(dots):
+    raw_dots = dots
+    z = raw_dots[:, 2]
+    dots = cart2pol_(raw_dots)
+    dots = np.swapaxes(np.array([dots[:, 0], dots[:, 1], z]), 0, 1)
+    dots[:, 1] = np.around(dots[:, 1] * 180 / pi)  # convert to degrees and round result
+    by_angle = [dots[dots[:, 1] == angle] for angle in np.unique(dots[:, 1])]  # separate r values by angle
+    by_angle = np.array([arr[np.argmax(arr[:, 0])] for arr in by_angle])  # keep only highest r value
+    by_angle[:, 1] = by_angle[:, 1] / 180 * pi  # convert back to radians
+    return by_angle
 
 
 def drap_coef(filename, r, R, show_plot=False):

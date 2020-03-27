@@ -20,7 +20,7 @@ class DataExtract(HasTraits):
     file_name = File(value='', filter=['*.stl'])
     open = Button('Open...')
     height = Range(0, 50, 25, label='top H')
-    top_h = Int(3, label='Disk height ')
+    top_h = Float(3, label='Disk height ')
     rot = Range(-3.14, 3.14, 0.0, label='Rotate by, rad')
     figure = Instance(Figure, ())
     save = Button('Build models and save')
@@ -70,7 +70,7 @@ class DataExtract(HasTraits):
         wildcard = '|'.join(extns)
         name = os.path.splitext(os.path.basename(self.file_name))[0]  # extract name from path "/dir/file.jpg" -> "file"
         default_path = '\\'.join([ROOT_DIR, 'data', 'results', name])  #
-        default_path += f'_({self.slices_df.columns.values[0]}-{self.slices_df.columns.values[-1]}).xlsx'
+        default_path += f'_({self.slices_df.columns.values[0]}-{self.slices_df.columns.values[-2]}){self.top_h}.xlsx'
         dialog = FileDialog(title='Save results',
                             action='save as', wildcard=wildcard,
                             default_path=default_path)

@@ -5,6 +5,14 @@ from scipy.stats import mode
 from f_model import fit, generate_x0, generate_n, f_model_h, calc_r2
 
 
+def isfloat(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
 def cart2pol(xy):
     x, y = xy[:, 0], xy[:, 1]
     rho = np.sqrt(x ** 2 + y ** 2)
@@ -29,7 +37,7 @@ def cart2pol_(x, y, x0=0, y0=0):
 
 
 def merge_slices_into_pd(slices, h):
-    h = ['{:.1f}'.format(_) for _ in h]  # round float values
+    h = ['{:.1f}'.format(_) if isfloat(_) else _ for _ in h]  # round float values
     pd_slices = [pd.DataFrame(slice, columns=[h_, 'theta'])  # convert arrays to pandas frame array
                      .apply(lambda x: np.ceil(
         x * 100 / 5) * 5 / 100 if x.name == 'theta' else x)  # round theta to nearest 5 w 2 point of precision
@@ -74,8 +82,8 @@ def load_slices_df(path):
 
 def make_models_from_df(slices_df, shadow_a=None):
     models_df, model_pic_paths = create_model_df(slices_df, pictures=True)
-    line_df = create_line_eq_df(models_df)
-    big_ar2 = r2_for_whole_model(slices_df, models_df, line_df)
+    line_df = create_line_eq_df(models_df.iloc[:-1])
+    big_ar2 = r2_for_whole_model(slices_df.iloc[:, :-1], models_df.iloc[:-1], line_df)
     data_dict = {'model': models_df, 'line': line_df, 'data': slices_df, 'pic_paths': model_pic_paths,
                  'shadow_a': shadow_a, 'big_ar2': big_ar2}
     return data_dict
@@ -101,11 +109,11 @@ def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a,
     # df.columns = ['r₀', 'r₁', 'r₂', 'n', 'Δφ₁', 'Δφ₂', 'k₁', 'k₂', 'R²']
     df.columns = ['n', 'R₀', 'ΔR₁', 'Δφ₁', 'k₁', 'ΔR₂', 'Δφ₂', 'R²']  # set pretty text formatting
     df.to_excel(writer, sheet_name='Result', startrow=0, startcol=0)
-    worksheet_result.write_string(models.shape[0] + 4, 0, 'Lines')
+    worksheet_result.write_string(models.shape[0] + 3, 0, 'Коэфициенты пропорциональности')
     line.to_excel(writer, sheet_name='Result', startrow=df.shape[0] + 4, startcol=0)
     worksheet_result.write_string(0, 0, 'H', bold_cell)
     worksheet_result.write(df.shape[0] + 1, df.shape[1], big_ar2)
-    worksheet_result.write_string(df.shape[0] + 1, df.shape[1] - 1, 'With h:')
+    worksheet_result.write_string(df.shape[0] + 1, df.shape[1] - 3, 'R² для поверхности пробы:')
 
     data.to_excel(writer, sheet_name='Data', startrow=0, startcol=0)
     worksheet_data.insert_image(2, data.shape[1] + 2, 'temp\\slices.png')
@@ -116,7 +124,8 @@ def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a,
         cols = [5, 6, 8, 9, 10, 11, 12]
         words = ['r', 'r', 'A', 'A', 'm', 'm', 'D']
         subs = ['пробы', 'диска', 's', 'o', 'sa', 'pr', 'd']
-        [worksheet_result.write_rich_string(8, col, word, subscript, sub, bold_cell) for col, word, sub in zip(cols, words, subs)]
+        [worksheet_result.write_rich_string(8, col, word, subscript, sub, bold_cell) for col, word, sub in
+         zip(cols, words, subs)]
         cols = [8, 9, 10, 11]  # same as prev :(
         words = ['Ф.I', 'Ф.II', 'Ф.III', 'Ф.IV']
         [worksheet_result.write_string(11, col, word, bold_cell) for col, word in zip(cols, words)]

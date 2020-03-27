@@ -5,6 +5,15 @@ import matplotlib.pyplot as plt
 from collections import namedtuple
 from math import ceil, pi
 
+
+def isfloat(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
 data_tuple = namedtuple('dots', ['vars', 'model', 'var_map', 'df', 'text', 'dots', 'x0'])
 globals_names = {'np': np}
 str_expr = 'r0 + r1 * ((1 + np.sin(n * thetas + dfi1)) / 2) ** k1 + r2 * ((1 + np.sin(2 * thetas + dfi2)) / 2) ** k2'
@@ -123,7 +132,7 @@ k2     {:.2f}
         print(text)
 
     if show_plot or save_plot_path is not None:
-        name = (r'$H = ' + H + '$\n' + r'$R^2 = $' + '{:.2f}'.format(r2_adj)) if H is not None else ''
+        name = (r'$H = ' + H + '$\n' + r'$R^2 = $' + '{:.2f}'.format(r2_adj)) if H is not None and isfloat(H) else ''
         plot_data_n_model(data_r_th, model, save_plot_path, plot_name=name)
 
     var_d = {'r0': weights[0], 'r1': weights[1], 'r2': weights[2], 'n': int(weights[3]), 'dfi1': weights[4],
