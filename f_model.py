@@ -60,7 +60,8 @@ def generate_n(r):
     r = r[r != 0.]  # remove 0
     sign = np.sign(r)  # map vales into -1 if lower or 1
     sign = sign[1:][sign[1:] != sign[:-1]]  # remove values if there are repeated: 1,1,1,1,-1 -> 1,-1
-    return len(sign) // 2
+    print(len(sign), len(sign) // 2)
+    return ceil(len(sign) / 2)
 
 
 def generate_x0(r, n=None):
@@ -94,7 +95,7 @@ def fit(x0, data_r_th, save_plot_path=None, show_plot=False, H=None, text_output
     # Find model coefficients using minimization method
     fun = f(th)  # 1. Put variables into model
     g = lambda par: loss(r, fun(par))  # 2. define loss metric for given coeffs
-    bounds = Bounds([0., 0., 0., 3, -np.inf, -np.inf, 1., 4.], [200, 100, 100, 8, np.inf, np.inf, 3., 4.])
+    bounds = Bounds([0., 0., 0., 3, -np.inf, -np.inf, 1., 4.], [200, 100, 100, 12, np.inf, np.inf, 3., 4.])
     opt_result = minimize(g, x0, method='L-BFGS-B', bounds=bounds,
                           options={'eps': .001})  # 3. Find coeffs using scipy
     weights = opt_result.x
