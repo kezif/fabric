@@ -106,13 +106,14 @@ def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a,
     subscript = workbook.add_format({'font_script': 2})
 
     df = models.loc[:, ['n', 'r0', 'r1', 'dfi1', 'k1', 'r2', 'dfi2', 'ar2']]  # reshape in cool format
+    df.ar2 = np.floor(df.ar2 * 10000) / 100
     # df.columns = ['r₀', 'r₁', 'r₂', 'n', 'Δφ₁', 'Δφ₂', 'k₁', 'k₂', 'R²']
-    df.columns = ['n', 'R₀', 'ΔR₁', 'Δφ₁', 'k₁', 'ΔR₂', 'Δφ₂', 'R²']  # set pretty text formatting
+    df.columns = ['n', 'R₀', 'ΔR₁', 'Δφ₁', 'k₁', 'ΔR₂', 'Δφ₂', 'R², %']  # set pretty text formatting
     df.to_excel(writer, sheet_name='Result', startrow=0, startcol=0)
     worksheet_result.write_string(models.shape[0] + 3, 0, 'Коэфициенты пропорциональности')
     line.to_excel(writer, sheet_name='Result', startrow=df.shape[0] + 4, startcol=0)
     worksheet_result.write_string(0, 0, 'H', bold_cell)
-    worksheet_result.write(df.shape[0] + 1, df.shape[1], big_ar2)
+    worksheet_result.write(df.shape[0] + 1, df.shape[1], np.floor(big_ar2 * 1000)/100)
     worksheet_result.write_string(df.shape[0] + 1, df.shape[1] - 3, 'R² для поверхности пробы:')
 
     data.to_excel(writer, sheet_name='Data', startrow=0, startcol=0)
