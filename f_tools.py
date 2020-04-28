@@ -106,14 +106,14 @@ def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a,
     subscript = workbook.add_format({'font_script': 2})
 
     df = models.loc[:, ['n', 'r0', 'r1', 'dfi1', 'k1', 'r2', 'dfi2', 'ar2', 'A']]  # reshape in cool format
-    df.ar2 = np.floor(df.ar2 * 10000) / 100
+    df.ar2 = df.ar2 * 100
     # df.columns = ['r₀', 'r₁', 'r₂', 'n', 'Δφ₁', 'Δφ₂', 'k₁', 'k₂', 'R²']
     df.columns = ['n', 'R₀', 'ΔR₁', 'Δφ₁', 'k₁', 'ΔR₂', 'Δφ₂', 'R², %',  'A, %']  # set pretty text formatting
     df.to_excel(writer, sheet_name='Result', startrow=0, startcol=0)
     worksheet_result.write_string(models.shape[0] + 3, 0, 'Коэфициенты пропорциональности')
     line.to_excel(writer, sheet_name='Result', startrow=df.shape[0] + 4, startcol=0)
     worksheet_result.write_string(0, 0, 'H', bold_cell)
-    worksheet_result.write(df.shape[0] + 1, df.shape[1] - 1, np.floor(big_ar2 * 10000)/100)
+    worksheet_result.write(df.shape[0] + 1, df.shape[1] - 1, big_ar2 * 100)
     worksheet_result.write_string(df.shape[0] + 1, df.shape[1] - 4, 'R² для поверхности пробы:')
 
     data.to_excel(writer, sheet_name='Data', startrow=0, startcol=0)
@@ -137,10 +137,10 @@ def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a,
         worksheet_result.write_formula(9, 10, '=I10 - M10')  # K10 T
         worksheet_result.write_formula(9, 11, '=J10 - M10')  # L10 O
         worksheet_result.write_formula(9, 12, '=PI() * G10 * G10')  # M10 d
-        worksheet_result.write_formula(12, 8, '=IF(L10 > 0, K10 / L10, "")')  # T/O
-        worksheet_result.write_formula(12, 9, '=IF(J10 > 0, (J10 - I10) / J10, "")')  # (D - S) / D
-        worksheet_result.write_formula(12, 10, '=IF(J10 >0, (J10 - I10) / (J10 - M10), "")')  # (D - S) / (D - d)
-        worksheet_result.write_formula(12, 11, '=IF(J10 > 0, I10 / J10, "")')  # S/D
+        worksheet_result.write_formula(12, 8, '=IF(L10 > 0, K10 / L10 * 100, "")')  # T/O
+        worksheet_result.write_formula(12, 9, '=IF(J10 > 0, (J10 - I10) / J10 * 100, "")')  # (D - S) / D
+        worksheet_result.write_formula(12, 10, '=IF(J10 >0, (J10 - I10) / (J10 - M10) * 100, "")')  # (D - S) / (D - d)
+        worksheet_result.write_formula(12, 11, '=IF(J10 > 0, I10 / J10 * 100, "")')  # S/D
     writer.save()
 
 
