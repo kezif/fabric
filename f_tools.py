@@ -105,16 +105,16 @@ def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a,
     bold_cell = workbook.add_format({'bold': True, 'border': 1})
     subscript = workbook.add_format({'font_script': 2})
 
-    df = models.loc[:, ['n', 'r0', 'r1', 'dfi1', 'k1', 'r2', 'dfi2', 'ar2']]  # reshape in cool format
+    df = models.loc[:, ['n', 'r0', 'r1', 'dfi1', 'k1', 'r2', 'dfi2', 'ar2', 'A']]  # reshape in cool format
     df.ar2 = np.floor(df.ar2 * 10000) / 100
     # df.columns = ['r₀', 'r₁', 'r₂', 'n', 'Δφ₁', 'Δφ₂', 'k₁', 'k₂', 'R²']
-    df.columns = ['n', 'R₀', 'ΔR₁', 'Δφ₁', 'k₁', 'ΔR₂', 'Δφ₂', 'R², %']  # set pretty text formatting
+    df.columns = ['n', 'R₀', 'ΔR₁', 'Δφ₁', 'k₁', 'ΔR₂', 'Δφ₂', 'R², %',  'A, %']  # set pretty text formatting
     df.to_excel(writer, sheet_name='Result', startrow=0, startcol=0)
     worksheet_result.write_string(models.shape[0] + 3, 0, 'Коэфициенты пропорциональности')
     line.to_excel(writer, sheet_name='Result', startrow=df.shape[0] + 4, startcol=0)
     worksheet_result.write_string(0, 0, 'H', bold_cell)
-    worksheet_result.write(df.shape[0] + 1, df.shape[1], np.floor(big_ar2 * 10000)/100)
-    worksheet_result.write_string(df.shape[0] + 1, df.shape[1] - 3, 'R² для поверхности пробы:')
+    worksheet_result.write(df.shape[0] + 1, df.shape[1] - 1, np.floor(big_ar2 * 10000)/100)
+    worksheet_result.write_string(df.shape[0] + 1, df.shape[1] - 4, 'R² для поверхности пробы:')
 
     data.to_excel(writer, sheet_name='Data', startrow=0, startcol=0)
     worksheet_data.insert_image(2, data.shape[1] + 2, 'temp\\slices.png')
@@ -177,6 +177,7 @@ def create_model_df(df, pictures=False):
     n = generate_n(slices[-1][:, 0])  # extract n from deepest layer
     fitt = [fit(generate_x0(d[:, 0], n=n), d, H=h, save_plot_path=path) for d, h, path in zip(slices, hs, save_path)]
     coefs = pd.concat([m.df for m in fitt])
+    coefs['A'] = coefs['r2'] * 100 / coefs['r0']
     if not pictures:
         return coefs
     else:
