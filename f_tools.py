@@ -113,7 +113,7 @@ def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a,
     worksheet_result.write_string(models.shape[0] + 3, 0, 'Коэфициенты пропорциональности')
     line.to_excel(writer, sheet_name='Result', startrow=df.shape[0] + 4, startcol=0)
     worksheet_result.write_string(0, 0, 'H', bold_cell)
-    worksheet_result.write(df.shape[0] + 1, df.shape[1], np.floor(big_ar2 * 1000)/100)
+    worksheet_result.write(df.shape[0] + 1, df.shape[1], np.floor(big_ar2 * 10000)/100)
     worksheet_result.write_string(df.shape[0] + 1, df.shape[1] - 3, 'R² для поверхности пробы:')
 
     data.to_excel(writer, sheet_name='Data', startrow=0, startcol=0)
