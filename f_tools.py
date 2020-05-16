@@ -80,21 +80,21 @@ def load_slices_df(path):
     return pd.read_csv(path, index_col='theta')
 
 
-def make_models_from_df(slices_df, shadow_a=None):
+def make_models_from_df(slices_df, shadow_a=None, rsmoll=None, rbig=None):
     models_df, model_pic_paths = create_model_df(slices_df, pictures=True)
     line_df = create_line_eq_df(models_df.iloc[:-1])
     big_ar2 = r2_for_whole_model(slices_df.iloc[:, :-1], models_df.iloc[:-1], line_df)
     data_dict = {'model': models_df, 'line': line_df, 'data': slices_df, 'pic_paths': model_pic_paths,
-                 'shadow_a': shadow_a, 'big_ar2': big_ar2}
+                 'shadow_a': shadow_a, 'big_ar2': big_ar2, 'rsmoll': rsmoll, 'rbig': rbig}
     return data_dict
 
 
 def save_results(data_dict, save_path):
-    model_df, line_df, data_df, model_pic_paths, shadow_a, big_ar2 = data_dict.values()  # bruh unpacking
-    write_results_to_excel(model_df, line_df, data_df, save_path, model_pic_paths, shadow_a, big_ar2)
+    model_df, line_df, data_df, model_pic_paths, shadow_a, big_ar2, rsmoll, rbig = data_dict.values()  # bruh unpacking
+    write_results_to_excel(model_df, line_df, data_df, save_path, model_pic_paths, shadow_a, big_ar2, rsmoll, rbig)
 
 
-def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a, big_ar2):
+def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a, big_ar2, rsmoll, rbig):
     filename = path
     writer = pd.ExcelWriter(filename, engine='xlsxwriter')
     workbook = writer.book
@@ -115,6 +115,9 @@ def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a,
     worksheet_result.write_string(0, 0, 'H', bold_cell)
     worksheet_result.write(df.shape[0] + 1, df.shape[1] - 1, big_ar2 * 100)
     worksheet_result.write_string(df.shape[0] + 1, df.shape[1] - 4, 'R² для поверхности пробы:')
+
+    worksheet_result.write('F10', rbig)
+    worksheet_result.write('G10', rsmoll)
 
     data.to_excel(writer, sheet_name='Data', startrow=0, startcol=0)
     worksheet_data.insert_image(2, data.shape[1] + 2, 'temp\\slices.png')

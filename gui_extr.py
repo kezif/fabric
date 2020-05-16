@@ -21,6 +21,8 @@ class DataExtract(HasTraits):
     open = Button('Open...')
     height = Range(0, 50, 25, label='top H')
     top_h = Float(3, label='Disk height ')
+    rsmoll = Int(0, label='r диска')
+    rbig = Int(0, label='r пробы')
     rot = Range(-3.14, 3.14, 0.0, label='Rotate by, rad')
     figure = Instance(Figure, ())
     save = Button('Build models and save')
@@ -42,6 +44,11 @@ class DataExtract(HasTraits):
             Item('circle_plot', show_label=False),
             ), 
         Item('rot'),
+        '10', '_', '5',
+        HGroup(
+            Item('rsmoll'),
+            Item('rbig'),
+        ),
     )
     save_group = Group(
         '5', '_', '5',
@@ -82,7 +89,7 @@ class DataExtract(HasTraits):
                 path = path + '.xlsx'
             self.figure.savefig('temp//slices.png', dpi=100)
             sh_a = shadow_area(self.dots)
-            self.data_dict = make_models_from_df(self.slices_df, shadow_a=sh_a)
+            self.data_dict = make_models_from_df(self.slices_df, shadow_a=sh_a, rsmoll=self.rsmoll, rbig=self.rbig)
             save_results(self.data_dict, path)  # save not only data, but complete spreadsheet, w models, pics and etc
         print('Done.')    
 
