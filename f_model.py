@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 from collections import namedtuple
 from math import ceil, pi
 
+from scipy.stats import mode
+
+from f_tools import extract_slices_df
+
 
 def isfloat(value):
     try:
@@ -14,7 +18,7 @@ def isfloat(value):
         return False
 
 
-data_tuple = namedtuple('dots', ['vars', 'model', 'var_map', 'df', 'text', 'dots', 'x0'])
+model_data_tuple = namedtuple('model', ['vars', 'model', 'var_map', 'df', 'text', 'dots', 'x0'])
 globals_names = {'np': np}
 str_expr = 'r0 + r1 * ((1 + np.sin(n * thetas + dfi1)) / 2) ** k1 + r2 * ((1 + np.sin(2 * thetas + dfi2)) / 2) ** k2'
 
@@ -139,7 +143,7 @@ k2     {:.2f}
     var_d = {'r0': weights[0], 'r1': weights[1], 'r2': weights[2], 'n': int(weights[3]), 'dfi1': weights[4],
              'dfi2': weights[5], 'k1': weights[6], 'k2': weights[7], 'ar2': r2_adj}
     df = pd.DataFrame(var_d, index=[H])
-    res = data_tuple(vars=weights, model=model, var_map=var_d, df=df, text=text, dots=data_r_th, x0=x0)
+    res = model_data_tuple(vars=weights, model=model, var_map=var_d, df=df, text=text, dots=data_r_th, x0=x0)
     return res
 
 
@@ -189,5 +193,52 @@ def format_ax(ax, r):  # move to another file
     return axes
 '''
 
-if __name__ == "__main__":
-    pass
+
+def r2_for_whole_model(slice_df, m_df, lines_df):
+    mode_par = mode(m_df).mode[0]  # extract mode values from each column
+    model = f_model_h(mode_par, lines_df)
+
+    thetas = slice_df.index.values
+    hhs = np.asfarray(slice_df.columns.values, float)
+
+    model_slices = np.array([model(thetas, h) for h in hhs]).T  # get model result for each theta for each h
+
+    res = calc_r2(slice_df, model_slices)
+    return res
+
+
+def make_models_from_df(slices_df):
+    models_df, model_pic_paths = create_model_df(slices_df, pictures=True)
+    line_df = create_line_eq_df(models_df.iloc[:-1])
+    big_ar2 = r2_for_whole_model(slices_df.iloc[:, :-1], models_df.iloc[:-1], line_df)
+    data_dict = {'model': models_df, 'line': line_df, 'data': slices_df, 'pic_paths': model_pic_paths,
+                 'big_ar2': big_ar2,}
+    return data_dict
+
+
+def create_model_df(df, pictures=False):
+    slices, hs = extract_slices_df(df)
+    if not pictures:
+        save_path = [None] * len(slices)
+    else:
+        save_path = [f'temp\\model{i}.png' for i in range(1, len(slices) + 1)]
+    n = generate_n(slices[-1][:, 0])  # extract n from deepest layer
+    fitt = [fit(generate_x0(d[:, 0], n=n), d, H=h, save_plot_path=path) for d, h, path in zip(slices, hs, save_path)]
+    coefs = pd.concat([m.df for m in fitt])
+    coefs['A'] = coefs['r2'] * 100 / coefs['r0']
+    if not pictures:
+        return coefs
+    else:
+        return coefs, save_path
+
+
+def create_line_eq_df(df_model):
+    x = [float(v) for v in df_model.index.values]
+    values = df_model[['r0', 'r1', 'r2', 'k1']].values.T
+
+    ar = []
+    for y in values:
+        ar.append(np.polyfit(x, y, 1))
+
+    line_eq = pd.DataFrame(data=ar, index=['r0', 'r1', 'r2', 'k1'], columns=['a', 'b'])
+    return line_eq

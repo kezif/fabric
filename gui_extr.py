@@ -1,7 +1,10 @@
-from libs import *
-from f_extract import read_stl, slice_dots, shadow_area, layer_from_dots
-from f_tools import merge_slices_into_pd, plot_df_on_ax, save_slices_df, make_models_from_df, circle_fit, save_results
-from f_model import format_ax
+import traitsui
+
+from gui_libs import *
+from f_extract import *
+from f_tools import *
+from f_save import *
+from f_model import format_ax, make_models_from_df
 
 
 class DataExtract(HasTraits):
@@ -89,8 +92,8 @@ class DataExtract(HasTraits):
                 path = path + '.xlsx'
             self.figure.savefig('temp//slices.png', dpi=100)
             sh_a = shadow_area(self.dots)
-            self.data_dict = make_models_from_df(self.slices_df, shadow_a=sh_a, rsmoll=self.rsmoll, rbig=self.rbig)
-            save_results(self.data_dict, path)  # save not only data, but complete spreadsheet, w models, pics and etc
+            self.data_dict = make_models_from_df(self.slices_df)
+            save_results(self.data_dict, sh_a, self.rsmoll, self.rbig, path)  # save not only data, but complete spreadsheet, w models, pics and etc
         print('Done.')    
 
     def _save_data_fired(self):
@@ -121,7 +124,9 @@ class DataExtract(HasTraits):
                             default_path=ROOT_DIR)
         if dialog.open() == OK:
             self.file_name = dialog.path
-        self.update_dots()
+            self.update_dots()
+        else:
+            traitsui.message.error('can\'t excract data from file')
 
     @on_trait_change(['top_h'])
     def update_dots(self):
@@ -130,6 +135,8 @@ class DataExtract(HasTraits):
 
     @on_trait_change(['height', 'rot', 'skip_each_n_dot', 'start_from_h'])
     def update_slices(self):
+        if self.dots is None:
+            traitsui.message.error('File is not loaded')
         slices, h = slice_dots(self.dots, 4, self.height, self.start_from_h, self.top_h, self.rot)
         self.slices_df = merge_slices_into_pd(slices, h)
         self.plot_()
