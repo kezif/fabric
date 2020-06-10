@@ -92,7 +92,7 @@ class DataExtract(HasTraits):
                 path = path + '.xlsx'
             self.figure.savefig('temp//slices.png', dpi=100)
             sh_a = shadow_area(self.dots)
-            self.data_dict = make_models_from_df(self.slices_df)
+            self.data_dict = make_models_from_df(self.slices_df, pictures=False)
             save_results(self.data_dict, sh_a, self.rsmoll, self.rbig, path)  # save not only data, but complete spreadsheet, w models, pics and etc
         print('Done.')    
 

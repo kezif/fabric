@@ -11,7 +11,7 @@ def load_slices_df(path):
     return pd.read_csv(path, index_col='theta')
 
 
-def save_results(model_data_dict, shadow_a, rsmoll, rbig, save_path):
+def save_results(model_data_dict, shadow_a=0, rsmoll=0, rbig=0, save_path='test.xlsx'):
     model_df, line_df, data_df, model_pic_paths, big_ar2 = model_data_dict.values()  # bruh unpacking
     write_results_to_excel(model_df, line_df, data_df, save_path, model_pic_paths, shadow_a, big_ar2, rsmoll, rbig)
 

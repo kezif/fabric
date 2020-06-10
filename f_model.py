@@ -23,7 +23,7 @@ globals_names = {'np': np}
 str_expr = 'r0 + r1 * ((1 + np.sin(n * thetas + dfi1)) / 2) ** k1 + r2 * ((1 + np.sin(2 * thetas + dfi2)) / 2) ** k2'
 
 
-def loss(target, predicted):  # define loss function
+def mse(target, predicted):  # define loss function
     return np.mean(np.sum((target - predicted) ** 2))
 
 
@@ -88,8 +88,8 @@ def generate_x0(r, n=None):
 
 
 def calc_r2(x_actual, x_model):  # coefficient of determination
-    ss_tot = loss(x_actual, np.mean(x_actual))
-    ss_res = loss(x_actual, x_model)
+    ss_tot = mse(x_actual, np.mean(x_actual))
+    ss_res = mse(x_actual, x_model)
     return 1 - ss_res / ss_tot
 
 
@@ -98,16 +98,16 @@ def fit(x0, data_r_th, save_plot_path=None, show_plot=False, H=None, text_output
     r, th = data_r_th[:, 0], data_r_th[:, 1]
     # Find model coefficients using minimization method
     fun = f(th)  # 1. Put variables into model
-    g = lambda par: loss(r, fun(par))  # 2. define loss metric for given coeffs
+    g = lambda par: mse(r, fun(par))  # 2. define loss metric for given coeffs
     bounds = Bounds([0., 0., 0., 3, -np.inf, -np.inf, 1., 4.], [200, 100, 100, 12, np.inf, np.inf, 3., 4.])
     opt_result = minimize(g, x0, method='L-BFGS-B', bounds=bounds,
                           options={'eps': .001})  # 3. Find coeffs using scipy
-    weights = opt_result.x
+    weights = opt_result.x  # save neat results in named tuple
     model = f_model(weights)
 
     num = len(r)
     k = 7  # number of model coeffs
-    error = loss(r, model(th))
+    error = mse(r, model(th))
     mean_of_observed = np.mean(r)
     std = (error / (num - 1)) ** (1 / 2)
     '''ss_tot = loss(r, mean_of_observed)
@@ -207,8 +207,8 @@ def r2_for_whole_model(slice_df, m_df, lines_df):
     return res
 
 
-def make_models_from_df(slices_df):
-    models_df, model_pic_paths = create_model_df(slices_df, pictures=True)
+def make_models_from_df(slices_df, pictures=True):
+    models_df, model_pic_paths = create_model_df(slices_df, pictures=pictures)
     line_df = create_line_eq_df(models_df.iloc[:-1])
     big_ar2 = r2_for_whole_model(slices_df.iloc[:, :-1], models_df.iloc[:-1], line_df)
     data_dict = {'model': models_df, 'line': line_df, 'data': slices_df, 'pic_paths': model_pic_paths,
