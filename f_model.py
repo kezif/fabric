@@ -1,13 +1,15 @@
+from matplotlib.font_manager import FontProperties
 from scipy.optimize import minimize, Bounds
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+plt.style.use('seaborn-white')
 from collections import namedtuple
 from math import ceil, pi
 
 from scipy.stats import mode
 
-from f_tools import extract_slices_df
+from f_tools import extract_slices_df, MODEL_PIC_PATH
 
 
 def isfloat(value):
@@ -64,7 +66,7 @@ def generate_n(r):
     r = r[r != 0.]  # remove 0
     sign = np.sign(r)  # map vales into -1 if lower or 1
     sign = sign[1:][sign[1:] != sign[:-1]]  # remove values if there are repeated: 1,1,1,1,-1 -> 1,-1
-    print(len(sign), len(sign) // 2)
+    #print('n calculation', len(sign), len(sign) // 2)
     return ceil(len(sign) / 2)
 
 
@@ -161,9 +163,12 @@ def plot_data_n_model(data_r_th, model, save_im_path=None, plot_name=' '):
     format_ax(ax, r)
     ax.set_xticklabels([r'$0^{\circ}$', r'$45^{\circ}$'])  # , '', '', '', r'$180^{\circ}$'])
     ax.set_title(plot_name, loc='left')
-    ax.legend(['Prediction', 'Target'])
+    fontP = FontProperties()
+    fontP.set_size('small')
+    ax.legend(['Prediction', 'Target'], prop=fontP, loc='lower left', bbox_to_anchor=(-.1, -.1))
     if save_im_path is not None:
         fig.savefig(save_im_path, dpi=200)
+        plt.close(fig)
     else:
         plt.show()
 
@@ -207,29 +212,22 @@ def r2_for_whole_model(slice_df, m_df, lines_df):
     return res
 
 
-def make_models_from_df(slices_df, pictures=True):
-    models_df, model_pic_paths = create_model_df(slices_df, pictures=pictures)
+def make_models_from_df(slices_df):
+    models_df = create_model_df(slices_df)
     line_df = create_line_eq_df(models_df.iloc[:-1])
     big_ar2 = r2_for_whole_model(slices_df.iloc[:, :-1], models_df.iloc[:-1], line_df)
-    data_dict = {'model': models_df, 'line': line_df, 'data': slices_df, 'pic_paths': model_pic_paths,
+    data_dict = {'model': models_df, 'line': line_df, 'data': slices_df,
                  'big_ar2': big_ar2,}
     return data_dict
 
 
-def create_model_df(df, pictures=False):
+def create_model_df(df):
     slices, hs = extract_slices_df(df)
-    if not pictures:
-        save_path = [None] * len(slices)
-    else:
-        save_path = [f'temp\\model{i}.png' for i in range(1, len(slices) + 1)]
     n = generate_n(slices[-1][:, 0])  # extract n from deepest layer
-    fitt = [fit(generate_x0(d[:, 0], n=n), d, H=h, save_plot_path=path) for d, h, path in zip(slices, hs, save_path)]
+    fitt = [fit(generate_x0(d[:, 0], n=n), d, H=h, save_plot_path=path) for d, h, path in zip(slices, hs, MODEL_PIC_PATH)]
     coefs = pd.concat([m.df for m in fitt])
     coefs['A'] = coefs['r2'] * 100 / coefs['r0']
-    if not pictures:
-        return coefs
-    else:
-        return coefs, save_path
+    return coefs
 
 
 def create_line_eq_df(df_model):

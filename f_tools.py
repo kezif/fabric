@@ -1,6 +1,12 @@
-import pandas as pd
+import matplotlib.pyplot as plt
+plt.style.use('seaborn-white')
 import numpy as np
+import pandas as pd
+from matplotlib.font_manager import FontProperties
 from numpy import pi
+
+NUM_SLICES = 4  # didn't used anywhere expect here
+MODEL_PIC_PATH = [f'temp\\model{i}.png' for i in range(1, NUM_SLICES + 1)]
 
 def isfloat(value):
     try:
@@ -62,7 +68,9 @@ def plot_df_on_ax(slices_df, ax):
     if not ax.lines:
         for r in r_:
             ax.plot(theta, r)
-        ax.legend(h)
+        fontP = FontProperties()
+        fontP.set_size('small')
+        ax.legend(h, prop=fontP, loc='lower left', bbox_to_anchor=(-.1, -.1))
     else:
         for line, r in zip(ax.lines, r_):
             line.set_xdata(theta)
@@ -86,7 +94,6 @@ def circle_fit(target, eps=.1, n_max=20, show_info=False, save_fig=False):
     target = df[['x', 'y']].values  #
 
     if show_info or save_fig:
-        import matplotlib.pyplot as plt
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.axis('equal')
@@ -123,6 +130,7 @@ def circle_fit(target, eps=.1, n_max=20, show_info=False, save_fig=False):
                 if save_fig:
                     try:
                         fig.savefig('temp\\circle_fit.png', dpi=200)
+                        plt.close(fig)
                     except e:
                         pass
                 '''ax2 = fig.add_subplot(122)

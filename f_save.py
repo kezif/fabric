@@ -1,7 +1,7 @@
 import pickle
 
 import pandas as pd
-
+from f_tools import MODEL_PIC_PATH
 
 def save_slices_df(df, path):
     df.to_csv(path)
@@ -12,11 +12,11 @@ def load_slices_df(path):
 
 
 def save_results(model_data_dict, shadow_a=0, rsmoll=0, rbig=0, save_path='test.xlsx'):
-    model_df, line_df, data_df, model_pic_paths, big_ar2 = model_data_dict.values()  # bruh unpacking
-    write_results_to_excel(model_df, line_df, data_df, save_path, model_pic_paths, shadow_a, big_ar2, rsmoll, rbig)
+    model_df, line_df, data_df, big_ar2 = model_data_dict.values()  # bruh unpacking
+    write_results_to_excel(model_df, line_df, data_df, save_path, shadow_a, big_ar2, rsmoll, rbig)
 
 
-def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a, big_ar2, rsmoll, rbig):
+def write_results_to_excel(models, line, data, path, shadow_a, big_ar2, rsmoll, rbig):
     filename = path
     writer = pd.ExcelWriter(filename, engine='xlsxwriter')
     workbook = writer.book
@@ -44,7 +44,7 @@ def write_results_to_excel(models, line, data, path, model_pics_paths, shadow_a,
     data.to_excel(writer, sheet_name='Data', startrow=0, startcol=0)
     worksheet_data.insert_image(2, data.shape[1] + 2, 'temp\\slices.png')
     worksheet_data.insert_image(20, data.shape[1] + 2, 'temp\\circle_fit.png', {'x_scale': 0.5, 'y_scale': 0.5})
-    for pat, i, j in zip(model_pics_paths, [0, 0, 1, 1], [0, 1, 0, 1]):
+    for pat, i, j in zip(MODEL_PIC_PATH, [0, 0, 1, 1], [0, 1, 0, 1]):
         worksheet_result.insert_image(models.shape[0] + line.shape[0] + 6 + 19 * i, 5 + 6 * j, pat)
     if shadow_a is not None:  # ridiculous if statement :/Dₒₔ
         cols = [5, 6, 8, 9, 10, 11, 12]
