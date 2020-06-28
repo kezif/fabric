@@ -215,6 +215,11 @@ class CompareFolders(HasTraits):
 
 
 CompareFolders().configure_traits()
+'''folder1 = r'E:\A\fabric_\data/results/melanzhevye-dannye/меланжевые-данные'
+folder2 = r'E:\A\fabric_\data/results/salatovye_dannye/салатовые данные'
+samples = get_data_from_folders(folder1, folder2)
+man, stu, text_compar = compare_folders(folder1, folder2)
+print(stu)'''
 
 # folders = folder_selected1, folder_selected2
 # compare_folders(*folders)
