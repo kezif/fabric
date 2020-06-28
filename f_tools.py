@@ -5,7 +5,7 @@ import pandas as pd
 from matplotlib.font_manager import FontProperties
 from numpy import pi
 
-NUM_SLICES = 4  # didn't used anywhere expect here
+NUM_SLICES = 5  # didn't used anywhere expect here
 MODEL_PIC_PATH = [f'temp\\model{i}.png' for i in range(1, NUM_SLICES + 1)]
 
 def isfloat(value):
