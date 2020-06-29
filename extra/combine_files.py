@@ -100,6 +100,9 @@ def get_data_from_folders(folder_path1, folder_path2):
 
 
 def compare_folders(folder_path1, folder_path2):
+    """
+    Function to couple functions from above
+    """
     samples = get_data_from_folders(folder_path1, folder_path2)
     # print([(k, i) for k, i in samples.items()])
 
@@ -108,6 +111,7 @@ def compare_folders(folder_path1, folder_path2):
     text_compar = ('Сравнение между папками {} и {}'.format(*[i for i in samples.keys()]))
     man, text_man = mannwhit_test(*res, cols)
     stu, text_stu = t_student_abs_value(*res, cols)
+    mean, std =
     return man, stu, text_compar
 
 

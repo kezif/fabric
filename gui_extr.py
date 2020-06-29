@@ -1,5 +1,6 @@
 import traitsui
 
+from extra.combine_files import CompareFolders
 from gui_libs import *
 from f_extract import *
 from f_tools import *
@@ -32,6 +33,7 @@ class DataExtract(HasTraits):
     save_data = Button('Save data')
     start_from_h = Range(0, 50, 15, label='bottom H')
     circle_plot = Button('plot')
+    compare_folder = Button('Сompare folders')
 
     main_group = Group(
         HGroup(
@@ -61,6 +63,9 @@ class DataExtract(HasTraits):
         HGroup('_',
                Item('save_data', springy=True, show_label=False)
                ),
+        HGroup('_',
+               Item('compare_folder', springy=True, show_label=False)
+               ),
     )
     save_item = Item('save', springy=True)
 
@@ -70,6 +75,9 @@ class DataExtract(HasTraits):
         '_',
         width=.3, height=.8, resizable=True, title='Data extraction 2.'
     )
+
+    def _compare_folder_fired(self):
+        CompareFolders().configure_traits()
 
     def _circle_plot_fired(self):
         layer = layer_from_dots(self.dots, self.top_h)
