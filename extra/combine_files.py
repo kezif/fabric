@@ -178,7 +178,7 @@ class CompareFolders(HasTraits):
                     if self.methods_list[0] in self.methods1:  # revritre in better way, also refactor to separete function would be great
                         file.write(f'\tРасчетное значение критерия Манна — Уитни: {man["D"]:.3f}\n' +  # at least move repeated chunks of code into function
                                    f'\tСравнение с критическим значением: {man["D"]:.3f} и {mann_crit}\n' +
-                                   f'\tРасчетное значение {"меньше критического - различия" if man["D"] < mann_crit else "больше критического - различия не"} подтверждены статистически\n'
+                                   f'\tРасчетное значение {"меньше критического - различия" if man["D"] <= mann_crit else "больше критического - различия не"} подтверждены статистически\n'
                                    )  # bruh
                     if self.methods_list[1] in self.methods1:
                         file.write(f'\tРасчетное значение коэфициента Стьюдента: {stu["D"]:.3f}\n' +
@@ -190,7 +190,7 @@ class CompareFolders(HasTraits):
                     if self.methods_list[0] in self.methods2:
                         file.write(f'\tРасчетное значение критерия Манна — Уитни: {man["R2"]:.3f}\n'+
                                    f'\tСравнение с критическим значением: {man["R2"]:.3f} и {mann_crit}\n' +
-                                   f'\tРасчетное значение {"меньше критического - различия" if man["R2"] < mann_crit else "больше критического - различия не"} подтверждены статистически\n'
+                                   f'\tРасчетное значение {"меньше критического - различия" if man["R2"] <= mann_crit else "больше критического - различия не"} подтверждены статистически\n'
                                    )
                     if self.methods_list[1] in self.methods2:
                         file.write(f'\tРасчетное значение коэфициента Стьюдента: {stu["R2"]:.3f}\n' +
@@ -202,7 +202,7 @@ class CompareFolders(HasTraits):
                     if self.methods_list[0] in self.methods3:
                         file.write(f'\tРасчетное значение критерия Манна — Уитни: {man["A"]:.3f}\n' +
                                    f'\tСравнение с критическим значением: {man["A"]:.3f} и {mann_crit}\n' +
-                                   f'\tРасчетное значение {"меньше критического - различия" if man["A"] < mann_crit else "больше критического - различия не"} подтверждены статистически\n'
+                                   f'\tРасчетное значение {"меньше критического - различия" if man["A"] <= mann_crit else "больше критического - различия не"} подтверждены статистически\n'
                                    )
                     if self.methods_list[1] in self.methods3:
                         file.write(f'\tРасчетное значение коэфициента Стьюдента: {stu["A"]:.3f}\n' +
@@ -214,7 +214,8 @@ class CompareFolders(HasTraits):
             message.error('Выберите метод и папки')
 
 
-CompareFolders().configure_traits()
+if __name__ == '__main__':
+    CompareFolders().configure_traits()
 '''folder1 = r'E:\A\fabric_\data/results/melanzhevye-dannye/меланжевые-данные'
 folder2 = r'E:\A\fabric_\data/results/salatovye_dannye/салатовые данные'
 samples = get_data_from_folders(folder1, folder2)
