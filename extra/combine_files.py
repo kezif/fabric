@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os.path
 import os
 import sys
@@ -20,6 +21,7 @@ TTABLE = [6.314, 2.920, 2.353, 2.132, 2.015,
           1.721, 1.717, 1.714, 1.711, 1.708,
           1.706, 1.703, 1.701, 1.699, 1.697,
           ]
+
 
 def load_data_from_excel(path):
     try:
@@ -49,6 +51,26 @@ def load_data_from_excel_old(path):
     except KeyError:
         return [None] * 4
 
+
+def load_n(path):
+    try:
+        # config file with save format mby? And normal way for reading file
+        df = pd.read_excel(path, sheet_name=0)  # bad indexing. Would broke
+        n = df.iloc[4, 1]
+        return n
+    except KeyError:
+        return None
+
+def load_n_ffolder(folder_path):
+    list_n = []
+    for file in os.listdir(folder_path):
+        if file.endswith('.xlsx'):
+            xlsx_path = os.path.join(folder_path, file)
+            n = load_n(xlsx_path)
+            list_n.append(n)
+    return list_n
+
+
 def find_number_of_samples(folder_path):
     counter = 0
     for file in os.listdir(folder_path):
@@ -66,7 +88,6 @@ def exctr_data_ffiles(folder_path):
             if data[0] is None:
                 data = load_data_from_excel_old(xlsx_path)
             list_models.append(data)
-
 
     folder_models = pd.DataFrame(list_models, columns=['D', 'R2', 'A', 'name'])
     folder_models.set_index('name', inplace=True)
@@ -111,9 +132,47 @@ def compare_folders(folder_path1, folder_path2):
     text_compar = ('Сравнение между папками {} и {}'.format(*[i for i in samples.keys()]))
     man, text_man = mannwhit_test(*res, cols)
     stu, text_stu = t_student_abs_value(*res, cols)
-    mean, std =
     return man, stu, text_compar
 
+
+class DataProperties(HasTraits):
+    def __init__(self):
+        super(DataProperties, self).__init__()
+
+    folder = Directory()
+    compute = Button()
+
+    traits_view = View(
+        Item('folder', show_label=True),
+        Item('compute'),
+        width=.3, height=.1, resizable=True, title='_'
+    )
+
+    def _compute_fired(self):
+        data = exctr_data_ffiles(self.folder)
+        ns = load_n_ffolder(r'E:\A\fabric_\data\results\salatovye_dannye\салатовые данные')
+        n = sum(ns) / len(ns)
+        data[['D']] = data[['D']] * 100
+        mean, std = data.mean(), data.std()
+        v = (100 - mean['D']) * np.sqrt(n * mean['R2']) / (3 * (mean['A'] + 2 * std.loc['A']))
+
+        wildcard = '*.txt'
+        default_path = os.path.dirname(self.folder) + '/' + os.path.basename(
+            self.folder) + ' показатели' + '.txt'
+        dialog = FileDialog(title='Save results',
+                            action='save as', wildcard=wildcard,
+                            default_path=default_path
+                            )
+        if dialog.open() == OK:
+            with open(dialog.path, 'w', encoding="utf-8") as file:
+                file.write(f'Показатели для {os.path.basename(self.folder)}\n\n')
+                file.write('Среднее:\n')
+                file.write(mean.to_string())
+                file.write('\n\nСредне квадратичное отклоенение:\n')
+                file.write(std.to_string())
+                file.write('\n\nV - ')
+                file.write(str(v))
+            print('done')
 
 class CompareFolders(HasTraits):
     def __init__(self):
@@ -150,14 +209,15 @@ class CompareFolders(HasTraits):
     )
 
     def _compute_fired(self):
-        print(self.alpha)
+        # print(self.alpha)
         if self.methods1 != [] and self.methods2 != [] and self.methods3 != [] and self.folder1 is not '' and self.folder2 is not '':
             man, stu, text = compare_folders(self.folder1, self.folder2)
             number_of_samples = find_number_of_samples(self.folder1)
 
-            #mann_value = 0
+            # mann_value = 0
             if self.alpha == self.ALPHA_VALUES[0]:  # table lookup
-                mann_crit = MANNWHITNEYTABLE[number_of_samples - 1]  # table is zero indexed, so for 18 files we need 17 value
+                mann_crit = MANNWHITNEYTABLE[
+                    number_of_samples - 1]  # table is zero indexed, so for 18 files we need 17 value
             elif self.alpha == self.ALPHA_VALUES[1]:  # manual
                 mann_crit = self.alpha_manual
             else:
@@ -165,10 +225,9 @@ class CompareFolders(HasTraits):
 
             t_value = TTABLE[number_of_samples - 2]  # same as above, but coeff of freedom is n-1
 
-
-
             wildcard = '*.txt'
-            default_path = os.path.dirname(self.folder1) + '/' + os.path.basename(self.folder1) + '__' + os.path.basename(
+            default_path = os.path.dirname(self.folder1) + '/' + os.path.basename(
+                self.folder1) + '__' + os.path.basename(
                 self.folder2) + '.txt'
             dialog = FileDialog(title='Save results',
                                 action='save as', wildcard=wildcard,
@@ -176,14 +235,17 @@ class CompareFolders(HasTraits):
                                 )
             if dialog.open() == OK:
                 with open(dialog.path, 'w', encoding="utf-8") as file:
-                    file.write(text + f'\nКритическое значение критерия Манна - Уитни: {mann_crit}\nКритическое значение коэфициента Стьюднта: {t_value}\n')
+                    file.write(
+                        text + f'\nКритическое значение критерия Манна - Уитни: {mann_crit}\nКритическое значение коэфициента Стьюднта: {t_value}\n')
 
                     file.write(f'\nПоказатель Кд:\n')
-                    if self.methods_list[0] in self.methods1:  # revritre in better way, also refactor to separete function would be great
-                        file.write(f'\tРасчетное значение критерия Манна — Уитни: {man["D"]:.3f}\n' +  # at least move repeated chunks of code into function
-                                   f'\tСравнение с критическим значением: {man["D"]:.3f} и {mann_crit}\n' +
-                                   f'\tРасчетное значение {"меньше критического - различия" if man["D"] <= mann_crit else "больше критического - различия не"} подтверждены статистически\n'
-                                   )  # bruh
+                    if self.methods_list[
+                        0] in self.methods1:  # revritre in better way, also refactor to separete function would be great
+                        file.write(
+                            f'\tРасчетное значение критерия Манна — Уитни: {man["D"]:.3f}\n' +  # at least move repeated chunks of code into function
+                            f'\tСравнение с критическим значением: {man["D"]:.3f} и {mann_crit}\n' +
+                            f'\tРасчетное значение {"меньше критического - различия" if man["D"] <= mann_crit else "больше критического - различия не"} подтверждены статистически\n'
+                        )  # bruh
                     if self.methods_list[1] in self.methods1:
                         file.write(f'\tРасчетное значение коэфициента Стьюдента: {stu["D"]:.3f}\n' +
                                    f'\tСравнение с критическим значением: {stu["D"]:.3f} и {t_value}\n' +
@@ -192,7 +254,7 @@ class CompareFolders(HasTraits):
 
                     file.write(f'\nПоказатель R2:\n')
                     if self.methods_list[0] in self.methods2:
-                        file.write(f'\tРасчетное значение критерия Манна — Уитни: {man["R2"]:.3f}\n'+
+                        file.write(f'\tРасчетное значение критерия Манна — Уитни: {man["R2"]:.3f}\n' +
                                    f'\tСравнение с критическим значением: {man["R2"]:.3f} и {mann_crit}\n' +
                                    f'\tРасчетное значение {"меньше критического - различия" if man["R2"] <= mann_crit else "больше критического - различия не"} подтверждены статистически\n'
                                    )
@@ -213,17 +275,19 @@ class CompareFolders(HasTraits):
                                    f'\tСравнение с критическим значением: {stu["A"]:.3f} и {t_value}\n' +
                                    f'\tРасчетное значение {"больше критического - различия" if stu["A"] >= t_value else "меньше критического - различия не"} подтверждены статистически\n'
                                    )
+
                     print('done')
         else:
             message.error('Выберите метод и папки')
 
 
 if __name__ == '__main__':
+    DataProperties().configure_traits()
     CompareFolders().configure_traits()
 '''folder1 = r'E:\A\fabric_\data/results/melanzhevye-dannye/меланжевые-данные'
 folder2 = r'E:\A\fabric_\data/results/salatovye_dannye/салатовые данные'
 samples = get_data_from_folders(folder1, folder2)
-man, stu, text_compar = compare_folders(folder1, folder2)
+man, stu, text_compar, _, _ = compare_folders(folder1, folder2)
 print(stu)'''
 
 # folders = folder_selected1, folder_selected2
