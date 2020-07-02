@@ -153,7 +153,7 @@ class DataProperties(HasTraits):
         ns = load_n_ffolder(self.folder)
         n = sum(ns) / len(ns)
         data[['D']] = data[['D']] * 100
-        data['R2'] = data['R2'].apply(lambda x: x if x < 1 else x*100)
+        data['R2'] = data['R2'].apply(lambda x: x if x < 1 else x/100)
         mean, std = data.mean(), data.std()
         v = (100 - mean['D']) * np.sqrt(n * mean['R2']) / (3 * (mean['A'] + 2 * std.loc['A']))
 
