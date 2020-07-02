@@ -167,6 +167,7 @@ class DataProperties(HasTraits):
         if dialog.open() == OK:
             with open(dialog.path, 'w', encoding="utf-8") as file:
                 file.write(f'Показатели для {os.path.basename(self.folder)}\n\n')
+                file.write(f'Среднеее количетсво складок: {n:.2f}\n\n')
                 file.write('Среднее:\n')
                 file.write(mean.to_string())
                 file.write('\n\nСредне квадратичное отклоенение:\n')
