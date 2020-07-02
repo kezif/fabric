@@ -28,7 +28,7 @@ def write_results_to_excel(models, line, data, path, shadow_a, big_ar2, rsmoll, 
     subscript = workbook.add_format({'font_script': 2})
 
     df = models.loc[:, ['n', 'r0', 'r1', 'dfi1', 'k1', 'r2', 'dfi2', 'ar2', 'A']]  # reshape in cool format
-    df.ar2 = df.ar2 * 100
+    #df.ar2 = df.ar2 * 100
     # df.columns = ['r₀', 'r₁', 'r₂', 'n', 'Δφ₁', 'Δφ₂', 'k₁', 'k₂', 'R²']
     df.columns = ['n', 'R₀', 'ΔR₁', 'Δφ₁', 'k₁', 'ΔR₂', 'Δφ₂', 'R², %',  'A, %']  # set pretty text formatting
     df.to_excel(writer, sheet_name='Result', startrow=0, startcol=0)
