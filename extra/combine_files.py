@@ -150,15 +150,15 @@ class DataProperties(HasTraits):
 
     def _compute_fired(self):
         data = exctr_data_ffiles(self.folder)
-        ns = load_n_ffolder(r'E:\A\fabric_\data\results\salatovye_dannye\салатовые данные')
+        ns = load_n_ffolder(self.folder)
         n = sum(ns) / len(ns)
         data[['D']] = data[['D']] * 100
         mean, std = data.mean(), data.std()
         v = (100 - mean['D']) * np.sqrt(n * mean['R2']) / (3 * (mean['A'] + 2 * std.loc['A']))
 
         wildcard = '*.txt'
-        default_path = os.path.dirname(self.folder) + '/' + os.path.basename(
-            self.folder) + ' показатели' + '.txt'
+        default_path = os.path.join(os.path.dirname(self.folder), os.path.basename(
+            self.folder) + ' показатели' + '.txt')
         dialog = FileDialog(title='Save results',
                             action='save as', wildcard=wildcard,
                             default_path=default_path
