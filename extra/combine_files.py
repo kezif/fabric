@@ -157,6 +157,9 @@ class DataProperties(HasTraits):
         mean, std = data.mean(), data.std()
         v = (100 - mean['D']) * np.sqrt(n * mean['R2']) / (3 * (mean['A'] + 2 * std.loc['A']))
 
+        mean.rename({'D': 'Кд'}, inplace=True)
+        std.rename({'D': 'Кд'}, inplace=True)
+
         wildcard = '*.txt'
         default_path = os.path.join(os.path.dirname(self.folder), os.path.basename(
             self.folder) + ' показатели' + '.txt')
