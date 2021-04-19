@@ -56,3 +56,13 @@ int(len(w) // 2)
 Fiting result with chosen initial parametrs for clice at height - 25
 
 ![res](https://i.imgur.com/tW5Faw6.png)
+
+
+## Installation
+
+Program was developed in python version 3.7.5
+
+After cloning package - cd into project directory and install packages:
+```
+pip install -r requirements.txt
+```
