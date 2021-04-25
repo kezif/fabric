@@ -215,7 +215,7 @@ class CompareFolders(HasTraits):
 
     def _compute_fired(self):
         # print(self.alpha)
-        if self.methods1 != [] and self.methods2 != [] and self.methods3 != [] and self.folder1 is not '' and self.folder2 is not '':
+        if self.methods1 != [] and self.methods2 != [] and self.methods3 != [] and self.folder1 != '' and self.folder2 != '':
             man, stu, text = compare_folders(self.folder1, self.folder2)
             number_of_samples = find_number_of_samples(self.folder1)
 
