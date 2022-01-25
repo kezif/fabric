@@ -25,7 +25,8 @@ globals_names = {'np': np}
 str_expr = 'r0 + r1 * ((1 + np.sin(n * thetas + dfi1)) / 2) ** k1 + r2 * ((1 + np.sin(2 * thetas + dfi2)) / 2) ** k2'
 
 
-def mse(target, predicted):  # define loss function
+def mse(target, predicted):  
+    # loss function
     return np.mean(np.sum((target - predicted) ** 2))
 
 
@@ -61,6 +62,7 @@ def f_model_h(par, line_df):
 
 
 def generate_n(r):
+    # find the number of oscilations in harmanic wave defined as np array
     middle = np.median(r)  # find median
     r = r - middle  # split values into lower and higher then med
     r = r[r != 0.]  # remove 0
@@ -71,6 +73,7 @@ def generate_n(r):
 
 
 def generate_x0(r, n=None):
+    # generate initial parametrs for optimisation function
     if n is not None:
         n = n  # pass
     else:
@@ -89,14 +92,16 @@ def generate_x0(r, n=None):
     return test, train'''
 
 
-def calc_r2(x_actual, x_model):  # coefficient of determination
+def calc_r2(x_actual, x_model):  
+    # coefficient of determination
     ss_tot = mse(x_actual, np.mean(x_actual))
     ss_res = mse(x_actual, x_model)
     return 1 - ss_res / ss_tot
 
 
-# compose everything into one fun
+# compose everything into one function
 def fit(x0, data_r_th, save_plot_path=None, show_plot=False, H=None, text_output=False):
+    # fit model to data! generate report
     r, th = data_r_th[:, 0], data_r_th[:, 1]
     # Find model coefficients using minimization method
     fun = f(th)  # 1. Put variables into model
@@ -149,7 +154,8 @@ k2     {:.2f}
     return res
 
 
-def plot_data_n_model(data_r_th, model, save_im_path=None, plot_name=' '):
+def plot_data_n_model(data_r_th: np.array, model, save_im_path=None:str, plot_name=' ':str):
+    # plot initial data and model prediction
     data_r_th = data_r_th[::2]
     r, th = data_r_th[:, 0], data_r_th[:, 1]
     fig = plt.figure(figsize=(3.75, 3.75))
@@ -174,6 +180,7 @@ def plot_data_n_model(data_r_th, model, save_im_path=None, plot_name=' '):
 
 
 def format_ax(ax, r):  # move to another file
+    # nice axes representation
     r = r[~np.isnan(r)]
     ax.set_ylim([0, np.max(r) + 10])
 
