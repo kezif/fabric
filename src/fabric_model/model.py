@@ -9,7 +9,7 @@ from math import ceil, pi
 
 from scipy.stats import mode
 
-from f_tools import extract_slices_df, MODEL_PIC_PATH
+from .tools import extract_slices_df, MODEL_PIC_PATH
 
 
 def isfloat(value):

@@ -1,7 +1,7 @@
 import pickle
 
 import pandas as pd
-from f_tools import MODEL_PIC_PATH
+from .tools import MODEL_PIC_PATH
 
 def save_slices_df(df, path):
     df.to_csv(path)

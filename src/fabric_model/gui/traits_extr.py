@@ -1,11 +1,11 @@
 import traitsui
 
 from extra.combine_files import CompareFolders, DataProperties
-from gui_libs import *
-from f_extract import *
-from f_tools import *
-from f_save import *
-from f_model import format_ax, make_models_from_df
+from .traits_libs import *
+from ..extract import *
+from ..tools import *
+from ..save import *
+from ..model import format_ax, make_models_from_df
 
 
 class DataExtract(HasTraits):
