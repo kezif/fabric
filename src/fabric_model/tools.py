@@ -131,7 +131,8 @@ def circle_fit(target, eps=.1, n_max=20, show_info=False, save_fig=False):
                     try:
                         fig.savefig('temp\\circle_fit.png', dpi=200)
                         plt.close(fig)
-                    except e:
+                    except OSError as e:
+                        print(e)
                         pass
                 '''ax2 = fig.add_subplot(122)
                 ax2.set_xlabel('Number of iterations')
