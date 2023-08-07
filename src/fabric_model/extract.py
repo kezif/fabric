@@ -15,10 +15,12 @@ def layer_from_dots(dots, height):
 def read_stl(filename, circle_h=3, save_fig=True):
     d_mesh = mesh.Mesh.from_file(filename, calculate_normals=False)
     dots = d_mesh.vectors  # it looks like .vectors and .dots return same shape result..
-    dots = np.unique(dots.reshape(len(dots) * 3, 3), axis=0)  # extract all dots from file
+    #dots = np.unique(dots.reshape(len(dots) * 3, 3), axis=0)  # extract all dots from file  # keep all vectors
+    dots = dots.reshape(-1, 3)
+
     # f = len(dots) // 15000  # if file size (n of dots) is too big - some dots will be skipped
     # dots = dots[::f]
-    dots = dots[dots[:, 2].argsort()]  # sort by z (for faster filtering)
+    #dots = dots[dots[:, 2].argsort()]  # sort by z (for faster filtering)  preserve original position
     layer = layer_from_dots(dots, circle_h)
     dx, dy, _ = circle_fit(layer, save_fig=save_fig)  # find the "real" center of data using layer
     dots = dots - [dx, dy, 0]  # so yea
@@ -38,7 +40,7 @@ def slice_dots(dots, n: int, max_h: int, ignore_before_h: int = 15, top_h: int =
         h.append(layer_h - top_h)  # and corresponding h
     slices.append(shadow_layer(dots)[:, :2])  # and also append shadow layer
     h.append('shadow')
-    slices = np.array(slices)
+    #slices = np.array(slices)
     return slices, h
 
 
