@@ -37,10 +37,10 @@ def main():
     ])
 
     style_dict = dict(showlegend=True, marker_symbol='circle-open', mode='lines+markers',marker_size=5,)
-    for slice, h_ in zip(slices, h):
-        slice_x, slice_y, _ = pol2cart3d(slice[:,1], slice[:,0], 0)
+    for slice, h_ in zip(slices, h):  # iterate over slices
+        slice_x, slice_y, _ = pol2cart3d(slice[:,1], slice[:,0], 0)   # internaly slice data it stored in polar coordinates, convert it back to cartiseian
 
-        if h_ == 'shadow':
+        if h_ == 'shadow':  # in case of shadow plot I'll want projection to z axis. Hopefully library have this functionality. It's a little bit hacky but original data would be plotted with 0 opacity. SO we would see only
             fig.add_trace(go.Scatter3d(x=slice_x, y=slice_y, z=np.full((slice_x.shape),-float(0)), 
                                     name=f'Shadow',
                                     projection={'z':{'show':True}},
