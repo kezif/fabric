@@ -1,25 +1,14 @@
 
 import plotly.graph_objects as go
 
-from ..extract import read_stl, slice_dots
-from ..tools import pol2cart3d, merge_slices_into_pd, extract_slices_df
 
-import numpy as np
 from stl import mesh
+import numpy as np
+from ..tools import pol2cart3d
 
+def get_fig(points:np.array, slices: list[np.array], h:list) -> go.Figure:
 
-
-def main():
-    filename = r'data\drap\2019_12_05-2-30-18.stl'
-    #filename = r'E:\projects\fabric_newrender\fabric.stl'
-
-
-
-    points = read_stl(filename, save_fig=False)
-
-    slices, h = slice_dots(points, 4, 25)
-    slices_df = merge_slices_into_pd(slices, h)
-    slices, h = extract_slices_df(slices_df)
+  
 
     faces_index = np.arange(len(points))
     fig = go.Figure(data=[
@@ -59,8 +48,7 @@ def main():
     fig.update_layout(scene_aspectmode='manual',
                   scene_aspectratio=dict(x=1, y=1, z=0.5))
 
-    fig.show()
+    return fig
+    
 
-if __name__ == '__main__':
-    main()
 

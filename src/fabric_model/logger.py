@@ -17,5 +17,5 @@ def get_logger(path) -> logging.Logger:
     file_handler.setFormatter(file_formatter)
 
     # Add the log file handler to the root logger
-    logging.getLogger().addHandler(file_handler)
-    return logging.getLogger()
+    logging.getLogger(__name__).addHandler(file_handler)
+    return logging.getLogger(__name__)
