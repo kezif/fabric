@@ -129,7 +129,7 @@ def visible_center(fig, checkbox, *args):
 
     if len(fig['data']) == 0: # if empty
         return dash.no_update
-    
+    fig['layout']['uirevision'] = 'some_value'
     fig['data'][6]['visible'] = bool(checkbox)  # when not selected - list is empty, therefor False
     fig['data'][7]['visible'] = bool(checkbox)
     return fig
