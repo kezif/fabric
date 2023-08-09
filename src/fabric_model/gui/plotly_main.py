@@ -6,6 +6,26 @@ from stl import mesh
 import numpy as np
 from ..tools import pol2cart3d
 
+missing_data_layout = {
+        "xaxis": {
+            "visible": False
+        },
+        "yaxis": {
+            "visible": False
+        },
+        "annotations": [
+            {
+                "text": "No matching data found",
+                "xref": "paper",
+                "yref": "paper",
+                "showarrow": False,
+                "font": {
+                    "size": 28
+                }
+            }
+        ]
+    }
+
 def get_fig(points:np.array, slices: list[np.array], h:list) -> go.Figure:
 
   

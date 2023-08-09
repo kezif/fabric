@@ -7,7 +7,7 @@ import tempfile
 import numpy as np
 from ..extract import read_stl, slice_dots
 from ..tools import merge_slices_into_pd, extract_slices_df
-from .plotly_main import get_fig, go
+from .plotly_main import get_fig, go, missing_data_layout
 
 from ..logger import get_logger
 
@@ -32,7 +32,7 @@ app.layout = html.Div([
     html.Div(children=[
         dcc.Graph(
         id='main-plot',
-        figure=go.Figure(), 
+        figure=go.Figure(layout=missing_data_layout), 
     ),
     ], style={'flex': 1}, className="eight columns"),
 
@@ -129,6 +129,7 @@ app.layout = html.Div([
             prevent_initial_call=True)
 def update_output(disk_h, content, filename, last_modified):
     if content is None:
+        log.debug(f'file is empty {filename}')
         return dash.no_update
     
     log.debug(f'loading file {filename}')
@@ -139,44 +140,67 @@ def update_output(disk_h, content, filename, last_modified):
     
 
 def parse_contents(disk_h, contents, filename):
+    log.debug(f'Loading file  {filename}')
     content_type, content_string = contents.split(',')
     if not filename.endswith('stl'):
         return dash.no_update
     
+    log.debug(f'Decoding base64 string and reading to file {filename}')
     decoded = base64.b64decode(content_string)
-    
     with open(r'temp\temp_file.stl','wb') as temp_file:
         temp_file.write(decoded)
     
-    points = read_stl(r'temp\temp_file.stl', disk_h)
+    log.debug(f'Reading stl file {filename}')
+    points = read_stl(r'temp\temp_file.stl', disk_h, save_fig=False)
+    log.debug(f'Returning points {filename}')
     return points
     
 
+# TODO update only slices when slice parameters updated
+# TODO store input's file data as base64 string. Read directly from it 
 
 @callback(
     output=[Output('main-plot', 'figure')],
     inputs=[Input('dots-upload', 'data'),
-    Input('top-h-slider', 'value'),
-    Input('bottom-h-slider', 'value'),
-    Input('rotate-degree-slider', 'value'),
+    State('top-h-slider', 'value'),
+    State('bottom-h-slider', 'value'),
+    State('rotate-degree-slider', 'value'),
     State('disk_height_input', 'value')],
     prevent_initial_call=True)
 def update_figure(points_json, top_h, bottom_h, rot, disk_h):
-    log.warning('UPDATING FIGURE')
+    log.debug('Updating figure')
 
+    if points_json is None:
+        log.debug('Points data is empty')
+        return dash.no_update
+    log.debug('Loading points data')
     points = np.array(json.loads(points_json))
 
+    log.debug('Caltulating slices')
     slices, h = slice_dots(points, 4, top_h, bottom_h, disk_h, rot)
     slices_df = merge_slices_into_pd(slices, h)  # normalize data by passing it to this function
     slices, h = extract_slices_df(slices_df)
 
+    log.debug('Acquiring figure')
     fig = get_fig(points, slices, h)
     fig.update_layout(title='Dash Data Visualization', height=800)
-
+    log.debug('Returning figure')
     return [fig]
 
 
-
+@callback(
+    output=[Output('main-plot', 'figure')],
+    inputs=[State('dots-upload', 'data'),
+    Input('top-h-slider', 'value'),
+    Input('bottom-h-slider', 'value'),
+    Input('rotate-degree-slider', 'value'),
+    Input('disk_height_input', 'value'),
+    State('main-plot', 'figure')],
+    prevent_initial_call=True)
+def update_slices(points_json, top_h, bottom_h, rot, disk_h, fig):
+    #update only slices on existing plot
+    log.debug('UPDATING SLICES')
+    return fig
 
 
 
