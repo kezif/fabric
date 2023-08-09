@@ -5,9 +5,9 @@ from dash import dcc, html, Input, Output, State, callback
 import json
 import tempfile
 import numpy as np
-from ..extract import read_stl, slice_dots
+from ..extract import read_stl_center_info, slice_dots
 from ..tools import merge_slices_into_pd, extract_slices_df
-from .plotly_main import get_fig, go, missing_data_layout
+from .plotly_main import get_fig_center_info, go, missing_data_layout
 
 from ..logger import get_logger
 
@@ -77,6 +77,7 @@ app.layout = html.Div([
                 type='number',
                 placeholder='disk height',
             ),
+        dcc.Checklist(options=['Show center info'], value=['Show center info'], id='show_info_checklist'),
         html.Label('rotate by °'),  
         dcc.Slider(-3.14, 3.14, 0.01,
                     value=0., 
@@ -119,6 +120,21 @@ app.layout = html.Div([
 ], style={'display': 'flex', 'flex-direction': 'row'})
 
 
+@callback(Output('main-plot', 'figure', allow_duplicate=True),
+            [State('main-plot', 'figure'),
+            Input('show_info_checklist', 'value')],
+            prevent_initial_call=True)   
+def visible_center(fig, checkbox, *args):
+    log.debug(f'{checkbox=}')
+
+    if len(fig['data']) == 0: # if empty
+        return dash.no_update
+    
+    fig['data'][6]['visible'] = bool(checkbox)  # when not selected - list is empty, therefor False
+    fig['data'][7]['visible'] = bool(checkbox)
+    return fig
+
+
 #Output('dots-upload', 'data'),
  
 @callback(Output('dots-upload', 'data'),
@@ -133,11 +149,12 @@ def update_output(disk_h, content, filename, last_modified):
         return dash.no_update
     
     log.debug(f'loading file {filename}')
-    points = parse_contents(disk_h, content, filename)
+    points, center_info = parse_contents(disk_h, content, filename)
     #log.debug(points)
-    return json.dumps(points.tolist())
-    
-    
+    d = dict(points=points.tolist(), center_layer=center_info[0].tolist(), dx=center_info[1], dy=center_info[2], circle_h=center_info[3])
+    return json.dumps(d)
+
+
 
 def parse_contents(disk_h, contents, filename):
     log.debug(f'Loading file  {filename}')
@@ -151,16 +168,17 @@ def parse_contents(disk_h, contents, filename):
         temp_file.write(decoded)
     
     log.debug(f'Reading stl file {filename}')
-    points = read_stl(r'temp\temp_file.stl', disk_h, save_fig=False)
+    points, center_data = read_stl_center_info(r'temp\temp_file.stl', disk_h, save_fig=False)
     log.debug(f'Returning points {filename}')
-    return points
+    return points, center_data
     
 
 # TODO update only slices when slice parameters updated
+# TODO save figure viewpoint when changing it
 # TODO store input's file data as base64 string. Read directly from it 
 
 @callback(
-    output=[Output('main-plot', 'figure')],
+    output=[Output('main-plot', 'figure', allow_duplicate=True)],
     inputs=[Input('dots-upload', 'data'),
     State('top-h-slider', 'value'),
     State('bottom-h-slider', 'value'),
@@ -174,7 +192,12 @@ def update_figure(points_json, top_h, bottom_h, rot, disk_h):
         log.debug('Points data is empty')
         return dash.no_update
     log.debug('Loading points data')
-    points = np.array(json.loads(points_json))
+    d = json.loads(points_json)
+    points = np.array(d['points'])
+    center_layer = np.array(d['center_layer'])
+    dx = float(d['dx'])
+    dy = float(d['dy'])
+    circle_h = float(d['circle_h'])
 
     log.debug('Caltulating slices')
     slices, h = slice_dots(points, 4, top_h, bottom_h, disk_h, rot)
@@ -182,7 +205,7 @@ def update_figure(points_json, top_h, bottom_h, rot, disk_h):
     slices, h = extract_slices_df(slices_df)
 
     log.debug('Acquiring figure')
-    fig = get_fig(points, slices, h)
+    fig = get_fig_center_info(points, slices, h, center_layer, dx, dy, circle_h)
     fig.update_layout(title='Dash Data Visualization', height=800)
     log.debug('Returning figure')
     return [fig]

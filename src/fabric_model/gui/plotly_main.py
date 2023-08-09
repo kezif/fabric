@@ -42,8 +42,10 @@ def get_fig(points:np.array, slices: list[np.array], h:list) -> go.Figure:
             k = faces_index[2::3],
             opacity = 0.8,
             name='fabric',
+            color='#7F8076'
         )
     ])
+
 
     style_dict = dict(showlegend=True, marker_symbol='circle-open', mode='lines+markers',marker_size=5,)
     for slice, h_ in zip(slices, h):  # iterate over slices
@@ -71,4 +73,63 @@ def get_fig(points:np.array, slices: list[np.array], h:list) -> go.Figure:
     return fig
     
 
+def get_fig_center_info(points:np.ndarray, slices: list[np.ndarray], h:list, top_layer_dots: np.ndarray, dx:float, dy:float, disk_h:int) -> go.Figure:
+    fig = get_fig(points, slices, h)
+    fig.add_trace(go.Scatter3d(x=top_layer_dots[:,0], y=top_layer_dots[:,1], z=np.full((len(top_layer_dots)),-disk_h),
+                               **dict(name=f'slice of which data is centered', 
+                                        showlegend=False,
+                                        marker_symbol='diamond-open',
+                                        mode='markers',
+                                        marker_size=2,
+                                        opacity=0.1,
+                                        marker_color='#5D63A2')))
+    fig.add_trace(go.Scatter3d(x=[dx], y=[dy], z=[-disk_h],
+                               **dict(name=f'Center', 
+                                        showlegend=False,
+                                        marker_symbol='cross',
+                                        mode='markers',
+                                        marker_size=20,
+                                        opacity=0.5,
+                                        marker_color='#5D63A2')))
+    return fig
 
+def get_empty_fig(n_slices=4):
+    fig = go.Figure(data=[
+        go.Mesh3d(
+            opacity = 0.8,
+            name='fabric',
+            color='#7F8076'
+        )
+    ])
+
+
+    style_dict = dict(showlegend=True, marker_symbol='circle-open', mode='lines+markers',marker_size=5,)
+    for _ in range(n_slices):  # iterate over slices
+        fig.add_trace(go.Scatter3d(name=f'Shadow',
+                                projection={'z':{'show':True}},
+                                opacity=.0,
+                                **style_dict
+                                ))
+   
+
+        
+    fig.add_trace(go.Scatter3d(name=f'slice at {_}',**style_dict),)
+               
+    fig.update_layout(scene_aspectmode='manual',
+                  scene_aspectratio=dict(x=1, y=1, z=0.5))
+
+    fig.add_trace(go.Scatter3d(name=f'slice of which data is centered', 
+                                        showlegend=False,
+                                        marker_symbol='diamond-open',
+                                        mode='markers',
+                                        marker_size=2,
+                                        opacity=0.1,
+                                        marker_color='#5D63A2'))
+    fig.add_trace(go.Scatter3d(name=f'Center', 
+                                        showlegend=False,
+                                        marker_symbol='cross',
+                                        mode='markers',
+                                        marker_size=20,
+                                        opacity=0.3,))
+    return fig
+                  
