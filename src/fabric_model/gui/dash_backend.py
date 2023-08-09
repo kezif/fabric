@@ -188,7 +188,7 @@ def update_figure(points_json, top_h, bottom_h, rot, disk_h):
     return [fig]
 
 
-@callback(
+'''@callback(
     output=[Output('main-plot', 'figure')],
     inputs=[State('dots-upload', 'data'),
     Input('top-h-slider', 'value'),
@@ -200,7 +200,7 @@ def update_figure(points_json, top_h, bottom_h, rot, disk_h):
 def update_slices(points_json, top_h, bottom_h, rot, disk_h, fig):
     #update only slices on existing plot
     log.debug('UPDATING SLICES')
-    return fig
+    return fig'''
 
 
 
